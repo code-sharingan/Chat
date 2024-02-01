@@ -14,7 +14,7 @@ def get_users():
     users = db.get_all_users()
     return UserCollection(
         meta={"count":len(users)},
-        users=sorted(users,key=sort_key)
+        Users=sorted(users,key=sort_key)
     )
 
 
