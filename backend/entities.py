@@ -13,8 +13,9 @@ class UserCollection(BaseModel):
     meta: Metadata
     users: list[User]
 
-
-class chat(BaseModel):
+class userIDB(BaseModel):
+    user:User
+class Chat(BaseModel):
     """represents an api response for a chat will be returned by GET/chats/{chat_id}"""
     id:str
     name:str
@@ -25,5 +26,8 @@ class chat(BaseModel):
 class chatCollection(BaseModel):
     """represents an api response for chats will be returned by Get/chats"""
     meta:Metadata
-    chats: list[chat]
+    chats: list[Chat]
 
+
+class userCreate(BaseModel):
+    id:str

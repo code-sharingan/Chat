@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request,HTTPException
 from fastapi.responses import JSONResponse, HTMLResponse
-from routers.users import user_router
+from backend.routers.users import user_router
+from backend.database import EntityNotFoundException
 app = FastAPI(
     title="Pony Express Chat",
     description="api for chatting",
@@ -27,7 +28,26 @@ def default() -> str:
     )
 
 
-if __name__=="__main__":
-    import uvicorn
-    uvicorn.run("backend.main:app",reload = True)
+
+@app.exception_handler(EntityNotFoundException)
+def handle_entity_not_found(
+    _request: Request,
+    exception: EntityNotFoundException,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": {
+                "type": "entity_not_found",
+                "entity_name": exception.entity_name,
+                "entity_id": exception.entity_id,
+            },
+        },
+    )
+
+@app.exception_handler(HTTPException)
+def handle_http_exception(request:Request,exception:HTTPException):
+    return JSONResponse(status_code=exception.status_code,
+                        content=exception.detail)
+
 
