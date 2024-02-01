@@ -11,7 +11,7 @@ class User(BaseModel):
 class UserCollection(BaseModel):
     """represents an api response for a collection of users."""
     meta: Metadata
-    Users: list[User]
+    users: list[User]
 
 class userIDB(BaseModel):
     user:User
