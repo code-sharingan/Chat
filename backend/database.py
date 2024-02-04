@@ -79,6 +79,17 @@ def get_messages(chat_id:str):
     if(chat_id not in Db["chats"]):
         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
     chat_data = Db["chats"][chat_id]
-    return chat_data.get("messages" ,[])
+    return chat_data.get("messages",[])
+
+def get_chat_user(chat_id:str):
+    if(chat_id not in Db["chats"]):
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    chat_data=Db["chats"][chat_id]
+    user_ids = chat_data.get("user_ids",[])
+    user =[]
+    for u in user_ids:
+        user.append(get_user_by_id(u))
+    return user
+    
 
     

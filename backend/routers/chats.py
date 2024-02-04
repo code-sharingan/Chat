@@ -2,7 +2,7 @@ from fastapi import APIRouter,HTTPException
 from datetime import date
 from typing import Literal
 from backend import database as db
-from backend.entities import chatCollection,Chat,chatIDB,chatCreate,messagesIDB,Message
+from backend.entities import chatCollection,Chat,chatIDB,chatCreate,messagesIDB,Message,UserCollection
 
 chat_router = APIRouter(prefix="/chats",tags=["chats"])
 
@@ -32,4 +32,9 @@ def get_chat_messages(chat_id:str):
     messages =db.get_messages(chat_id)
     return messagesIDB(meta={"count":len(messages)} , messages=messages)
 
+
+@chat_router.get("/{chat_id}/users",response_model=UserCollection)
+def get_chat_user(chat_id:str):
+    user = db.get_chat_user(chat_id)
+    return UserCollection(meta={"count":len(user)} , users=user)
 
