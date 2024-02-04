@@ -69,6 +69,9 @@ def put_chat(chat_id:str ,chat_create:chatCreate):
     else:
         Db["chats"][chat_id]["name"] = chat_create.name
     return Chat(**Db["chats"][chat_id])
-        
+
+def del_chat(chat_id):
+    chat=get_chat(chat_id)
+    del Db["chats"][chat_id]
 
     

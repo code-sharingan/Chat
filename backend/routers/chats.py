@@ -22,3 +22,7 @@ def get_caht(chat_id:str):
 @chat_router.post("/{chat_id}",response_model = chatIDB)
 def create_user(chat_create: chatCreate,chat_id:str):
     return chatIDB(chat=db.put_chat(chat_id,chat_create))
+
+@chat_router.delete("/{chat_id}",response_model=None,status_code=204)
+def delete_chat(chat_id:str):
+    db.del_chat(chat_id)

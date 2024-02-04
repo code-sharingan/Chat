@@ -39,6 +39,7 @@ def test_put_existing_user():
     assert response.json()["detail"]["entity_id"] == "sarah"
 
 def test_put_user():
+    """this test tries to put in a user that does not exists in the database"""
     create_param = {"id":"shubham"}
     client = TestClient(app)
     response = client.post("/users",json=create_param)

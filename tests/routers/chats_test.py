@@ -38,3 +38,62 @@ def test_get_chat_wrong_id():
 }
     assert response.status_code == 404
     assert response.json() == expected_response
+
+
+
+def test_put_correct_name():
+    test_client = TestClient(app)
+    create_param = {"name":"hello"}
+    expected_response ={
+  "chat": {
+    "id": "660c7a6bc1324e4488cafabc59529c93",
+    "name": "hello",
+    "user_ids": [
+      "reese",
+      "sarah"
+    ],
+    "owner_id": "reese",
+    "created_at": "2023-04-12T20:11:21"
+  }
+}
+    response = test_client.post("/chats/660c7a6bc1324e4488cafabc59529c93",json = create_param)
+    assert response.status_code ==200
+    assert response.json() ==  expected_response
+
+
+def test_put_wrong_id():
+    test_client = TestClient(app)
+    create_param = {"name":"hello"}
+    expected_response ={
+  "detail": {
+    "type": "entity_not_found",
+    "entity_name": "Chat",
+    "entity_id": "jj"
+  }
+}
+    response = test_client.post("/chats/jj",json = create_param)
+    assert response.status_code ==404
+    assert response.json() ==  expected_response
+    
+def test_delete():
+    test_client =TestClient(app)
+    response = test_client.delete("/chats/660c7a6bc1324e4488cafabc59529c93")
+    assert response.status_code ==204
+
+def test_delete_invalid_id():
+    test_client=TestClient(app)
+    expected_response ={
+  "detail": {
+    "type": "entity_not_found",
+    "entity_name": "Chat",
+    "entity_id": "ujj"
+  }
+}
+    response = test_client.delete("/chats/ujj")
+    assert response.status_code ==404
+    assert response.json() == expected_response
+
+    
+    
+    
+    
