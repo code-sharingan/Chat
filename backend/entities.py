@@ -31,3 +31,9 @@ class chatCollection(BaseModel):
 
 class userCreate(BaseModel):
     id:str
+
+class chatIDB(BaseModel):
+    chat: Chat
+
+class chatCreate(BaseModel):
+    name:str

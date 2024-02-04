@@ -3,7 +3,7 @@ from datetime import date
 from uuid import uuid4
 from fastapi import HTTPException
 
-from backend.entities import User,userCreate,Chat
+from backend.entities import User,userCreate,Chat,chatCreate
 with open("backend/fake_db.json","r") as f:
     Db = json.load(f)
 
@@ -56,3 +56,19 @@ def get_user_chats(user_id:str)->list[Chat]:
 
 def get_all_chats():
     return [Chat(**chat_data) for chat_data in Db["chats"].values()]
+
+def get_chat(chat_id:str):
+    if(chat_id in Db["chats"]):
+        return Chat(**Db["chats"][chat_id])
+    else:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+
+def put_chat(chat_id:str ,chat_create:chatCreate):
+    if(chat_id not in Db["chats"]):
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    else:
+        Db["chats"][chat_id]["name"] = chat_create.name
+    return Chat(**Db["chats"][chat_id])
+        
+
+    
