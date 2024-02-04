@@ -1,5 +1,5 @@
 import json
-from datetime import date
+from datetime import date ,datetime
 from uuid import uuid4
 from fastapi import HTTPException
 
@@ -31,7 +31,7 @@ def get_user_by_id(user_id:str)->User:
 
 def create_user(user_create :userCreate) ->User:
     """this is the backend method that puts in a new user to the database"""
-    user= User(created_at=date.today(), 
+    user= User(created_at=datetime.now(), 
                **user_create.model_dump(),)
     Db["users"][user.id] = user.model_dump()
     return user
