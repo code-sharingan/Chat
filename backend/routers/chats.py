@@ -19,7 +19,7 @@ def get_caht(chat_id:str):
     chat =db.get_chat(chat_id)
     return chatIDB(chat=chat)
 
-@chat_router.post("/{chat_id}",response_model = chatIDB)
+@chat_router.put("/{chat_id}",response_model = chatIDB)
 def create_user(chat_create: chatCreate,chat_id:str):
     return chatIDB(chat=db.put_chat(chat_id,chat_create))
 

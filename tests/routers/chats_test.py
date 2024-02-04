@@ -71,7 +71,7 @@ def test_put_wrong_id():
     "entity_id": "jj"
   }
 }
-    response = test_client.post("/chats/jj",json = create_param)
+    response = test_client.put("/chats/jj",json = create_param)
     assert response.status_code ==404
     assert response.json() ==  expected_response
     
