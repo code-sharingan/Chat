@@ -37,3 +37,14 @@ class chatIDB(BaseModel):
 
 class chatCreate(BaseModel):
     name:str
+
+class Message(BaseModel):
+    id:str
+    user_id:str
+    text:str
+    created_at:datetime
+
+class messagesIDB(BaseModel):
+    meta:Metadata
+    messages:list[Message]
+

@@ -74,4 +74,11 @@ def del_chat(chat_id):
     chat=get_chat(chat_id)
     del Db["chats"][chat_id]
 
+
+def get_messages(chat_id:str):
+    if(chat_id not in Db["chats"]):
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    chat_data = Db["chats"][chat_id]
+    return chat_data.get("messages" ,[])
+
     
