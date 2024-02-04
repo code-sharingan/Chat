@@ -52,3 +52,7 @@ def get_user_chats(user_id:str)->list[Chat]:
     return chats
             
 
+# ------------------------------chats---------------------------------------------
+
+def get_all_chats():
+    return [Chat(**chat_data) for chat_data in Db["chats"].values()]

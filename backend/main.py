@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request,HTTPException
 from fastapi.responses import JSONResponse, HTMLResponse
 from backend.routers.users import user_router
+from backend.routers.chats import chat_router
 from backend.database import EntityNotFoundException
 app = FastAPI(
     title="Pony Express Chat",
@@ -8,6 +9,7 @@ app = FastAPI(
     version="0.1.0")
 
 app.include_router(user_router)
+app.include_router(chat_router)
 # added this default loading page to take to different documentations
 @app.get("/", include_in_schema=False)
 def default() -> str:
