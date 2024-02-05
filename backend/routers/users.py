@@ -6,7 +6,7 @@ from backend import database as db
 
 from backend.entities import UserCollection,User,userCreate,userIDB,chatCollection
 
-user_router = APIRouter(prefix="/users",tags=["users"])
+user_router = APIRouter(prefix="/users",tags=["Users"])
 
 @user_router.get("",response_model=UserCollection,description="this api call returns all the users in the database")
 def get_users():

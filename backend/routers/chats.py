@@ -4,7 +4,7 @@ from typing import Literal
 from backend import database as db
 from backend.entities import chatCollection,Chat,chatIDB,chatCreate,messagesIDB,Message,UserCollection
 
-chat_router = APIRouter(prefix="/chats",tags=["chats"])
+chat_router = APIRouter(prefix="/chats",tags=["Chats"])
 
 @chat_router.get("",response_model=chatCollection,description="this api call gets all the chats")
 def get_chats():
