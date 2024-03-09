@@ -3,14 +3,23 @@ from fastapi.responses import JSONResponse, HTMLResponse
 from backend.routers.users import user_router
 from backend.routers.chats import chat_router
 from backend.database import EntityNotFoundException
+from fastapi .middleware.cors import CORSMiddleware
 app = FastAPI(
     title="Pony Express Chat",
     description="api for chatting",
     version="0.1.0")
 
+
 app.include_router(user_router)
 app.include_router(chat_router)
 # added this default loading page to take to different documentations
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 @app.get("/", include_in_schema=False)
 def default() -> str:
     return HTMLResponse(
