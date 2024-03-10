@@ -22,7 +22,7 @@ function ChatCard({chatId})
                 <div className="message-box">
                     <div className="user-name">
                         <div>{message.user_id}  -</div>
-                        <div>{message.created_at}</div>
+                        <div>{new Date(message.created_at).toDateString()}{new Date(message.created_at).toLocaleTimeString()}</div>
                     </div>
                 <div className="user-message">{message.text}</div>
                 </div>
@@ -71,10 +71,14 @@ function Chats()
 {
     const {chatId} = useParams();
     return (
-        <div className="main-container">
-        <ChatList/>
-        <ChatCard chatId={chatId}/>
+        <div>
+            <h1>PONY-EXPRESS</h1>
+            <div className="main-container">
+                <ChatList/>
+                <ChatCard chatId={chatId}/>
+            </div>
         </div>
+        
         
         )
 }
