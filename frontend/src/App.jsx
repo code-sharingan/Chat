@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import './App.css'
-
+import Chats from './components/Chats';
 const queryClient = new QueryClient();
 
 function App() {
@@ -9,7 +9,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<h1>placeholder</h1>} />
+          <Route path="/" element={<Chats/>} />
+          <Route path="/chats" element={<Chats/>}/>
+          <Route path="/chats/:chatId"element={<Chats/>}/>
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

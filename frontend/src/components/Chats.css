@@ -1,0 +1,50 @@
+.main-container{
+    display:flex;
+    flex-direction: row;
+}
+
+.message-box{
+    border: 2px solid orange ;
+    width:auto;
+    padding:5px;
+    margin:8px;
+    height:auto;
+}
+
+.chat-box{
+    border: 2px solid orange ;
+    width:200px;
+    padding:5px;
+    margin:8px;
+
+}
+
+.chat-name{
+    color:orange;
+    font-size: 16px;
+}
+
+.participants{
+    font-size: 10px;
+}
+
+.chat-card{
+    flex:1;
+    overflow-y: auto;
+    border: 2px solid green ;
+    width:500px;
+    height: 443px;
+    margin:8px;
+}
+
+.user-name{
+    display:flex;
+    flex-direction: row;
+    color:green;
+    font-size: 15px;
+    position: relative;
+}
+
+.user-text{
+    font-size: 10px;
+}
