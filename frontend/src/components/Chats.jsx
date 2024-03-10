@@ -21,7 +21,7 @@ function ChatCard({chatId})
             {data.messages.map((message)=>(
                 <div className="message-box">
                     <div className="user-name">
-                        <div>{message.user_id}</div>
+                        <div>{message.user_id}  -</div>
                         <div>{message.created_at}</div>
                     </div>
                 <div className="user-message">{message.text}</div>
