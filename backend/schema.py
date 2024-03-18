@@ -1,23 +1,8 @@
-from datetime import date,datetime
-from pydantic import BaseModel, Field
-from sqlmodel import Field, Relationship, SQLModel
+from datetime import datetime
 from typing import Optional
 
-class Metadata(BaseModel):
-    count:int
+from sqlmodel import Field, Relationship, SQLModel
 
-class User(SQLModel):
-    """represents an api responsoe for a user"""
-    id: int
-    username: str
-    email:str
-    created_at: datetime
-class UserResponse(SQLModel):
-    user:User
-class UserCollection(BaseModel):
-    """represents an api response for a collection of users."""
-    meta: Metadata
-    users: list[User]
 
 class UserChatLinkInDB(SQLModel, table=True):
     """Database model for many-to-many relation of users to chats."""
@@ -44,32 +29,6 @@ class UserInDB(SQLModel, table=True):
         link_model=UserChatLinkInDB,
     )
 
-class userCreate(SQLModel):
-    username:str
-    email:str
-    hashed_password:str
-
-
-
-
-# --------------------------------------chats model------------------------------------------------------
-class Chat(SQLModel):
-    """represents an api response for a chat will be returned by GET/chats/{chat_id}"""
-    id:int
-    name:str
-    owner:User
-    created_at:datetime
-
-class userChat(SQLModel):
-    metadata:Metadata
-    chats: list[Chat]
-class chatCollection(BaseModel):
-    """represents an api response for chats will be returned by Get/chats"""
-    meta:Metadata
-    chats: list[Chat]
-
-
-
 
 class ChatInDB(SQLModel, table=True):
     """Database model for chat."""
@@ -88,14 +47,6 @@ class ChatInDB(SQLModel, table=True):
     )
     messages: list["MessageInDB"] = Relationship(back_populates="chat")
 
-class chatCreate(BaseModel):
-    name:str
-
-class Message(BaseModel):
-    id:str
-    user_id:str
-    text:str
-    created_at:datetime
 
 class MessageInDB(SQLModel, table=True):
     """Database model for message."""
@@ -110,5 +61,4 @@ class MessageInDB(SQLModel, table=True):
 
     user: UserInDB = Relationship()
     chat: ChatInDB = Relationship(back_populates="messages")
-
 

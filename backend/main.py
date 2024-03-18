@@ -1,17 +1,26 @@
 from fastapi import FastAPI, Request,HTTPException
 from fastapi.responses import JSONResponse, HTMLResponse
 from backend.routers.users import user_router
-from backend.routers.chats import chat_router
+# from backend.routers.chats import chat_router
 from backend.database import EntityNotFoundException
 from fastapi .middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from backend.database import create_db_and_tables
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
+
 app = FastAPI(
     title="Pony Express Chat",
     description="api for chatting",
-    version="0.1.0")
-
+    version="0.1.0",
+    lifespan=lifespan)
 
 app.include_router(user_router)
-app.include_router(chat_router)
+# app.include_router(chat_router)
 # added this default loading page to take to different documentations
 app.add_middleware(
     CORSMiddleware,
