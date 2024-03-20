@@ -2,9 +2,9 @@ from fastapi import APIRouter,HTTPException,Depends
 from datetime import date
 from sqlmodel import Session
 from backend import database as db
+from backend.auth import get_current_user
 
-
-from backend.entities import UserCollection,User,userCreate,UserInDB,chatCollection,UserResponse,userChat,Chat,Metadata
+from backend.entities import UserCollection,User,userCreate,UserInDB,UserResponse,userChat,Chat,Metadata
 
 user_router = APIRouter(prefix="/users",tags=["Users"])
 
@@ -16,6 +16,13 @@ def get_users(session: Session = Depends(db.get_session)):
         meta={"count":len(users)},
         users=sorted(users,key=sort_key)
     )
+
+@user_router.get("/me" , response_model=UserResponse)
+def get_Self(user: UserInDB = Depends(get_current_user)):
+    """gte current user"""
+    u = User(id=user.id ,username=user.username,email=user.email,created_at=user.created_at)
+    return UserResponse(user = u)
+
 
 
 @user_router.get("/{user_id}" , response_model=UserResponse,description="get a user with that particular id")
@@ -34,6 +41,8 @@ def get_user_chats(user_id:int ,session: Session = Depends(db.get_session))->use
     chats_list = db.get_user_chats(session,user_id)
     chats=[]
     for chatDb in chats_list:
-        chat =Chat(id = chatDb.id , name=chatDb.name,owner=chatDb.owner,created_at=chatDb.created_at )
+        chat =Chat(id = chatDb.id ,name=chatDb.name,owner=chatDb.owner,created_at=chatDb.created_at )
         chats.append(chat)
     return userChat(metadata= Metadata(count=len(chats)), chats=chats)
+
+

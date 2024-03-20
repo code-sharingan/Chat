@@ -59,16 +59,18 @@ class Chat(SQLModel):
     name:str
     owner:User
     created_at:datetime
-
+class ChatResponse(SQLModel):
+    chat:Chat
 class userChat(SQLModel):
     metadata:Metadata
     chats: list[Chat]
-class chatCollection(BaseModel):
+class chatCollection(SQLModel):
     """represents an api response for chats will be returned by Get/chats"""
     meta:Metadata
     chats: list[Chat]
 
-
+class chatCreate(BaseModel):
+    name:str
 
 
 class ChatInDB(SQLModel, table=True):
@@ -88,14 +90,17 @@ class ChatInDB(SQLModel, table=True):
     )
     messages: list["MessageInDB"] = Relationship(back_populates="chat")
 
-class chatCreate(BaseModel):
-    name:str
 
-class Message(BaseModel):
-    id:str
-    user_id:str
+
+class Message(SQLModel):
+    id:int
     text:str
+    chat_id:int
+    user:User
     created_at:datetime
+class MessagesResponse(SQLModel):
+    meta: Metadata
+    messages: list[Message]
 
 class MessageInDB(SQLModel, table=True):
     """Database model for message."""

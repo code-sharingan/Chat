@@ -3,9 +3,9 @@ from datetime import date ,datetime
 from uuid import uuid4
 from fastapi import HTTPException
 from sqlmodel import Session, SQLModel, create_engine, select
-from backend.entities import User,userCreate,Chat,chatCreate, UserInDB ,ChatInDB
-with open("backend/fake_db.json","r") as f:
-    Db = json.load(f)
+from backend.entities import User,userCreate,Chat,chatCreate, UserInDB ,ChatInDB,ChatResponse,MessageInDB,Message,MessageInDB,MessagesResponse,UserCollection
+# with open("backend/fake_db.json","r") as f:
+#     Db = json.load(f)
 
 
 
@@ -62,63 +62,91 @@ def create_user(session: Session, user_create :userCreate) ->User:
     # return user
 
 
-def user_exists(id:str):
-    if id in Db["users"]:
-        return True
-    return False
 
 
 def get_user_chats(session :Session ,user_id:str)->list[Chat]:
     chats=[]
     query =(select(ChatInDB).join(ChatInDB.users).filter(UserInDB.id == user_id))
-    chats = session.exec(query).all()
+    chats_list = session.exec(query).all()
+    chats=[]
+    for chatDb in chats_list:
+        chat =Chat(id = chatDb.id , name=chatDb.name,owner=chatDb.owner,created_at=chatDb.created_at )
+        chats.append(chat)
     # for id,chat_data in Db["chats"].items():
     #     if(user_id in chat_data["user_ids"]):
     #         chat =Chat(**chat_data)
     #         chats.append(chat)
-    print("-------------------chats------------------")
-    print(chats)
     return chats
             
 
 # ------------------------------chats---------------------------------------------
 
-def get_all_chats():
-    return [Chat(**chat_data) for chat_data in Db["chats"].values()]
-
-def get_chat(chat_id:str):
-    if(chat_id in Db["chats"]):
-        return Chat(**Db["chats"][chat_id])
-    else:
-        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
-
-def put_chat(chat_id:str ,chat_create:chatCreate):
-    if(chat_id not in Db["chats"]):
-        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
-    else:
-        Db["chats"][chat_id]["name"] = chat_create.name
-    return Chat(**Db["chats"][chat_id])
-
-def del_chat(chat_id):
-    chat=get_chat(chat_id)
-    del Db["chats"][chat_id]
+def get_all_chats(session: Session):
+    chats = session.exec(select(ChatInDB)).all()
+    return chats
 
 
-def get_messages(chat_id:str):
-    if(chat_id not in Db["chats"]):
-        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
-    chat_data = Db["chats"][chat_id]
-    return chat_data.get("messages",[])
+def put_chat(session:Session ,chat_id:int ,chat_create:chatCreate):
+    name= chat_create.name
+    chat = session.get(ChatInDB,chat_id)
+    if(chat):
+        chat.name= name
+        session.commit()
+        session.refresh(chat)
+        chat_response=Chat(id=chat.id , name=chat.name,owner=chat.owner,created_at=chat.created_at)
+        return ChatResponse(chat=chat_response)
+    raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
 
-def get_chat_user(chat_id:str):
-    if(chat_id not in Db["chats"]):
-        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
-    chat_data=Db["chats"][chat_id]
-    user_ids = chat_data.get("user_ids",[])
-    user =[]
-    for u in user_ids:
-        user.append(get_user_by_id(u))
-    return user
+def get_messages(session: Session,chat_id:str):
+    messages = session.exec(select(MessageInDB).filter(MessageInDB.chat_id==chat_id)).all()
+    if(messages):
+        message_list=[]
+        for m in messages:
+            message = Message(id=m.id ,text=m.text,chat_id=m.chat_id,user=m.user,created_at=m.created_at)
+            message_list.append(message)
+        return MessagesResponse(meta={"count":len(message_list)},messages=message_list)
+    raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    
+def get_chat_users(session:Session,chat_id:int):
+    chat = session.get(ChatInDB,chat_id)
+    users=[]
+    if(chat):
+        for u in chat.users:
+            user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
+            users.append(user)
+            sort_key=lambda user: user.id
+            return UserCollection(
+        meta={"count":len(users)},
+        users=sorted(users,key=sort_key)
+    )
+    raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+
+
+
+# def get_chat(chat_id:str):
+#     if(chat_id in Db["chats"]):
+#         return Chat(**Db["chats"][chat_id])
+#     else:
+#         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+
+
+
+# def del_chat(chat_id):
+#     chat=get_chat(chat_id)
+#     del Db["chats"][chat_id]
+
+
+
+
+# def get_chat_user(chat_id:str):
+#     if(chat_id not in Db["chats"]):
+#         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+#     chat_data=Db["chats"][chat_id]
+#     user_ids = chat_data.get("user_ids",[])
+#     user =[]
+#     for u in user_ids:
+#         user.append(get_user_by_id(u))
+#     return user
     
 
     
