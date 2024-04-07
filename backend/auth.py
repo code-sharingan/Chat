@@ -15,11 +15,11 @@ from jose import ExpiredSignatureError,JWSError,jwt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 auth_router= APIRouter(prefix="/auth" , tags=["Authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
-acess_token_duration = 3600 # this is in seconds
+access_token_duration = 3600 # this is in seconds
 jwt_key="insecure-jwt-key"
 jwt_algo="HS256"
 class Claims(BaseModel):
-    """acess token claims"""
+    """access token claims"""
     subject:str 
     exp:int 
 
@@ -29,9 +29,9 @@ class UserResgistration(SQLModel):
     email:str 
     password:str
 
-class AcessToken(BaseModel):
-    """response model for acess token"""
-    acess_token:str 
+class AccessToken(BaseModel):
+    """response model for access token"""
+    access_token:str 
     token_type:str 
     expires_in: int
 
@@ -66,11 +66,11 @@ def register_new_user(register:UserResgistration,session: Session = Depends(db.g
     session.refresh(user)
     return user
 
-@auth_router.post("/token",response_model=AcessToken)
-def get_acess_token(form: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(db.get_session)):
+@auth_router.post("/token",response_model=AccessToken)
+def get_access_token(form: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(db.get_session)):
     """Get the access token for the user"""
     user= _get_authenticated_user(session,form)
-    return _build_acess_token(user)
+    return _build_access_token(user)
 
 
 
@@ -93,18 +93,22 @@ def _get_authenticated_user(session: Session,form: OAuth2PasswordRequestForm)->U
         raise InvalidCredentials()
     return user
 
-def _build_acess_token(user: UserInDB)->AcessToken:
-    expiration = int (datetime.now(timezone.utc).timestamp())+acess_token_duration
+def _build_access_token(user: UserInDB)->AccessToken:
+    expiration = int (datetime.now(timezone.utc).timestamp())+access_token_duration
     claims = Claims(subject=str(user.id) , exp= expiration)
     access_token = jwt.encode(claims.model_dump(),key=jwt_key,algorithm=jwt_algo)
-    return AcessToken(
-        acess_token=access_token,
+    return AccessToken(
+        access_token=access_token,
         token_type="bearer",
-        expires_in= acess_token_duration
+        expires_in= access_token_duration
     )
 
 
 def _decode_access_token(session: Session,token:str):
+    print("-----------------token--------------")
+    print(token)
+    print("-----------------token--------------")
+
     claims = Claims(**jwt.decode(token,key=jwt_key,algorithms=[jwt_algo]))
     user_id=claims.subject
     return session.get(UserInDB,user_id)
