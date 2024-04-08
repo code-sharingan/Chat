@@ -3,7 +3,8 @@ from datetime import date
 from typing import Literal
 from backend import database as db
 from sqlmodel import Session
-from backend.entities import chatCollection,Chat,chatCreate,Message,UserCollection,ChatResponse,MessagesResponse
+from backend.entities import chatCollection,Chat,chatCreate,Message,UserCollection,ChatResponse,MessagesResponse,MessageResponse,UserInDB
+from backend.auth import get_current_user
 
 chat_router = APIRouter(prefix="/chats",tags=["Chats"])
 
@@ -31,5 +32,7 @@ def get_chat_messages(chat_id:str,session: Session = Depends(db.get_session)):
 def get_chat_user(chat_id:str,session: Session = Depends(db.get_session)):
     return db.get_chat_users(session,chat_id)
 
-
+@chat_router.post("/{chat_id}/messages",response_model =MessageResponse)
+def putChatMessage(chat_id:str,text:str ,user: UserInDB = Depends(get_current_user),session :Session =  Depends(db.get_session)):
+    return db.updateChat(session,chat_id,user,text)
 

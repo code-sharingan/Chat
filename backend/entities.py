@@ -102,10 +102,13 @@ class Message(SQLModel):
     chat_id:int
     user:User
     created_at:datetime
+
 class MessagesResponse(SQLModel):
     meta: Metadata
     messages: list[Message]
 
+class MessageResponse(SQLModel):
+    message: Message
 class MessageInDB(SQLModel, table=True):
     """Database model for message."""
 
@@ -120,4 +123,5 @@ class MessageInDB(SQLModel, table=True):
     user: UserInDB = Relationship()
     chat: ChatInDB = Relationship(back_populates="messages")
 
-
+class chatMessageText(SQLModel):
+    text: str

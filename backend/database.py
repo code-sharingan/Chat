@@ -3,7 +3,7 @@ from datetime import date ,datetime
 from uuid import uuid4
 from fastapi import HTTPException
 from sqlmodel import Session, SQLModel, create_engine, select
-from backend.entities import User,userCreate,Chat,chatCreate, UserInDB ,ChatInDB,ChatResponse,MessageInDB,Message,MessageInDB,MessagesResponse,UserCollection
+from backend.entities import User,userCreate,Chat,chatCreate, UserInDB ,ChatInDB,ChatResponse,MessageInDB,Message,MessageInDB,MessagesResponse,UserCollection,MessageResponse
 # with open("backend/fake_db.json","r") as f:
 #     Db = json.load(f)
 
@@ -122,6 +122,19 @@ def get_chat_users(session:Session,chat_id:int):
         users=sorted(users,key=sort_key)
     )
     raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+
+def updateChat(session:Session,chat_id:int,user:UserInDB,text:str):
+    chat = session.get(ChatInDB,chat_id)
+    if chat:
+        message =  MessageInDB(user_id=user.id,text=text,chat_id=chat_id,chat = chat,user=user)
+        chat.messages.append(message)
+        session.commit()
+        session.refresh(chat)
+        u = User(id= user.id, username =  user.username , email=user.email,created_at=user.created_at)
+        m = Message(id=message.id , text =  message.text , chat_id = chat_id, user=u , created_at=message.created_at)
+        return MessageResponse(message=m)
+    else:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
 
 
 
