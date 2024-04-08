@@ -72,13 +72,15 @@ def get_user_chats(session :Session ,user_id:str)->list[Chat]:
     for chatDb in chats_list:
         chat =Chat(id = chatDb.id , name=chatDb.name,owner=chatDb.owner,created_at=chatDb.created_at )
         chats.append(chat)
-    # for id,chat_data in Db["chats"].items():
-    #     if(user_id in chat_data["user_ids"]):
-    #         chat =Chat(**chat_data)
-    #         chats.append(chat)
     return chats
             
-
+def update_u(session:Session ,useridb:UserInDB)->User:
+    session.add(useridb)
+    session.commit()
+    session.refresh(useridb)
+    user =  User(id=useridb.id ,username=useridb.username,email=useridb.email,created_at=useridb.created_at)
+    return user
+    
 # ------------------------------chats---------------------------------------------
 
 def get_all_chats(session: Session):

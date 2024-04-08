@@ -4,7 +4,7 @@ from sqlmodel import Session
 from backend import database as db
 from backend.auth import get_current_user
 
-from backend.entities import UserCollection,User,userCreate,UserInDB,UserResponse,userChat,Chat,Metadata
+from backend.entities import UserCollection,User,userCreate,UserInDB,UserResponse,userChat,Chat,Metadata,userUpdate
 
 user_router = APIRouter(prefix="/users",tags=["Users"])
 
@@ -24,7 +24,14 @@ def get_Self(user: UserInDB = Depends(get_current_user)):
     return UserResponse(user = u)
 
 
+@user_router.put("/me",response_model=UserResponse)
+def update_user(user_update: userUpdate,user: UserInDB = Depends(get_current_user),session :Session =  Depends(db.get_session)):
+    user.email = user_update.email
+    user.username =  user_update.username
+    user =db.update_u(session,user)
+    return UserResponse(user = user)
 
+    
 @user_router.get("/{user_id}" , response_model=UserResponse,description="get a user with that particular id")
 def get_user(user_id: int ,session: Session = Depends(db.get_session) ): 
     user = db.get_user_by_id(session,user_id)

@@ -50,6 +50,10 @@ class userCreate(SQLModel):
     hashed_password:str
 
 
+class userUpdate(SQLModel):
+    username:str
+    email:str
+
 
 
 # --------------------------------------chats model------------------------------------------------------

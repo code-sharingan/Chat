@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict
 from typing_extensions import Annotated, Doc
 from fastapi import APIRouter,Depends,HTTPException
@@ -5,10 +6,10 @@ from sqlmodel import SQLModel ,Session,select
 from backend.entities import User,UserInDB
 from passlib.context import CryptContext
 from backend import database as db
-from pydantic import BaseModel
+from pydantic import BaseModel,ValidationError
 from fastapi.security import OAuth2PasswordRequestForm,OAuth2PasswordBearer
 from datetime import datetime,timezone
-from jose import ExpiredSignatureError,JWSError,jwt
+from jose import ExpiredSignatureError,JWTError,jwt
 
 
 
@@ -16,7 +17,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 auth_router= APIRouter(prefix="/auth" , tags=["Authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 access_token_duration = 3600 # this is in seconds
-jwt_key="insecure-jwt-key"
+jwt_key= os.environ.get("JWT_KEY",default="insecure-jwt-key-for-dev")
 jwt_algo="HS256"
 class Claims(BaseModel):
     """access token claims"""
@@ -50,6 +51,20 @@ class InvalidCredentials(AuthException):
         super().__init__(
             error="invlaid_client",
             description="invlaid username or password",
+        )
+
+
+class InvalidToken(AuthException):
+   def __init__(self):
+        super().__init__(
+            error="invalid_client",
+            description="invlaid bearer token",
+        )
+class ExpiredToken(AuthException):
+    def __init__(self):
+        super().__init__(
+            error="token_expired",
+            description="expired bearer token",
         )
 
 @auth_router.post("/resgistration",response_model = User)
@@ -105,10 +120,17 @@ def _build_access_token(user: UserInDB)->AccessToken:
 
 
 def _decode_access_token(session: Session,token:str):
-    print("-----------------token--------------")
-    print(token)
-    print("-----------------token--------------")
+    try:
+        claims = Claims(**jwt.decode(token,key=jwt_key,algorithms=[jwt_algo]))
+        user_id=claims.subject
+        user = session.get(UserInDB,user_id)
 
-    claims = Claims(**jwt.decode(token,key=jwt_key,algorithms=[jwt_algo]))
-    user_id=claims.subject
-    return session.get(UserInDB,user_id)
+        if user is None:
+            raise InvalidToken()
+        return user
+    except ExpiredSignatureError:
+        raise ExpiredToken()
+    except JWTError:
+        raise InvalidToken()
+    except ValidationError:
+        raise InvalidToken()
