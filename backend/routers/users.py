@@ -50,6 +50,6 @@ def get_user_chats(user_id:int ,session: Session = Depends(db.get_session))->use
     # for chatDb in chats_list:
     #     chat =Chat(id = chatDb.id ,name=chatDb.name,owner=chatDb.owner,created_at=chatDb.created_at )
     #     chats.append(chat)
-    return userChat(metadata= Metadata(count=len(chats_list)), chats=chats_list)
+    return userChat(meta= Metadata(count=len(chats_list)), chats=chats_list)
 
 

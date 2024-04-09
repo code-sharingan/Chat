@@ -68,7 +68,7 @@ class Chat(SQLModel):
 class ChatResponse(SQLModel):
     chat:Chat
 class userChat(SQLModel):
-    metadata:Metadata
+    meta:Metadata
     chats: list[Chat]
 class chatCollection(SQLModel):
     """represents an api response for chats will be returned by Get/chats"""
