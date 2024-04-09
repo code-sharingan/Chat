@@ -65,14 +65,20 @@ def create_user(session: Session, user_create :userCreate) ->User:
 
 
 def get_user_chats(session :Session ,user_id:str)->list[Chat]:
-    chats=[]
-    query =(select(ChatInDB).join(ChatInDB.users).filter(UserInDB.id == user_id))
-    chats_list = session.exec(query).all()
-    chats=[]
-    for chatDb in chats_list:
-        chat =Chat(id = chatDb.id , name=chatDb.name,owner=chatDb.owner,created_at=chatDb.created_at )
-        chats.append(chat)
-    return chats
+    chats = session.exec(select(ChatInDB)).all()
+    chatlist=[]
+    for chat in chats:
+        if chat.owner_id == user_id:
+            c =Chat(id = chat.id , name=chat.name,owner=chat.owner,created_at=chat.created_at )
+            chatlist.append(c)
+        else:
+            for user in chat.users:
+                if user.id == user_id:
+                    c =Chat(id = chat.id , name=chat.name,owner=chat.owner,created_at=chat.created_at )
+                    chatlist.append(c)
+                    break
+
+    return chatlist
             
 def update_u(session:Session ,useridb:UserInDB)->User:
     session.add(useridb)

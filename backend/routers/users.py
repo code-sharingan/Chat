@@ -46,10 +46,10 @@ def create_user(user_create: userCreate,session: Session = Depends(db.get_sessio
 @user_router.get("/{user_id}/chats", response_model= userChat,description="this api9 call gets all the chats in which the partticular user is an active participant")
 def get_user_chats(user_id:int ,session: Session = Depends(db.get_session))->userChat:
     chats_list = db.get_user_chats(session,user_id)
-    chats=[]
-    for chatDb in chats_list:
-        chat =Chat(id = chatDb.id ,name=chatDb.name,owner=chatDb.owner,created_at=chatDb.created_at )
-        chats.append(chat)
-    return userChat(metadata= Metadata(count=len(chats)), chats=chats)
+    # chats=[]
+    # for chatDb in chats_list:
+    #     chat =Chat(id = chatDb.id ,name=chatDb.name,owner=chatDb.owner,created_at=chatDb.created_at )
+    #     chats.append(chat)
+    return userChat(metadata= Metadata(count=len(chats_list)), chats=chats_list)
 
 
