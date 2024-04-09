@@ -48,7 +48,7 @@ class AuthException(HTTPException):
 class InvalidCredentials(AuthException):
     def __init__(self):
         super().__init__(
-            error="invlaid_client",
+            error="invalid_client",
             description="invalid username or password",
         )
 
