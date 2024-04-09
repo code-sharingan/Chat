@@ -29,7 +29,7 @@ def get_chat_messages(chat_id:str,session: Session = Depends(db.get_session)):
 def get_chat_user(chat_id:str,session: Session = Depends(db.get_session)):
     return db.get_chat_users(session,chat_id)
 
-@chat_router.post("/{chat_id}/messages",response_model =MessageResponse)
+@chat_router.post("/{chat_id}/messages",response_model =MessageResponse,status_code=201)
 def putChatMessage(chat_id:str,message:messageCreate ,user: UserInDB = Depends(get_current_user),session :Session =  Depends(db.get_session)):
     return db.updateChat(session,chat_id,user,message.text)
 
