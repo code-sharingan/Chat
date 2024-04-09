@@ -3,7 +3,7 @@ from typing import Any, Dict
 from typing_extensions import Annotated, Doc
 from fastapi import APIRouter,Depends,HTTPException,status
 from sqlmodel import SQLModel ,Session,select
-from backend.entities import User,UserInDB
+from backend.entities import User,UserInDB,UserResponse
 from passlib.context import CryptContext
 from backend import database as db
 from pydantic import BaseModel,ValidationError
@@ -66,7 +66,7 @@ class ExpiredToken(AuthException):
             description="expired bearer token",
         )
 
-@auth_router.post("/registration",response_model = User,status_code=status.HTTP_201_CREATED)
+@auth_router.post("/registration",response_model = UserResponse,status_code=status.HTTP_201_CREATED)
 def register_new_user(register:UserResgistration,session: Session = Depends(db.get_session)):
     """Register a new user to the database"""
     hashed_pass = pwd_context.hash(register.password)
@@ -78,7 +78,7 @@ def register_new_user(register:UserResgistration,session: Session = Depends(db.g
     session.add(user)
     session.commit()
     session.refresh(user)
-    return user
+    return UserResponse(user=user)
 
 @auth_router.post("/token",response_model=AccessToken)
 def get_access_token(form: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(db.get_session)):
