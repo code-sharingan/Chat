@@ -15,7 +15,7 @@ from jose import ExpiredSignatureError,JWTError,jwt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 auth_router= APIRouter(prefix="/auth" , tags=["Authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
-access_token_duration = 0 # this is in seconds
+access_token_duration = 3600 # this is in seconds
 jwt_key= os.environ.get("JWT_KEY",default="insecure-jwt-key-for-dev")
 jwt_algo="HS256"
 class Claims(BaseModel):

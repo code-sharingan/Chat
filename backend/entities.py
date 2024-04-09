@@ -53,8 +53,8 @@ class userCreate(SQLModel):
 
 
 class userUpdate(SQLModel):
-    username:str
-    email:str
+    username:Optional[str]=None
+    email:Optional[str]=None
 
 
 

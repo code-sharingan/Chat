@@ -26,8 +26,10 @@ def get_Self(user: UserInDB = Depends(get_current_user)):
 
 @user_router.put("/me",response_model=UserResponse)
 def update_user(user_update: userUpdate,user: UserInDB = Depends(get_current_user),session :Session =  Depends(db.get_session)):
-    user.email = user_update.email
-    user.username =  user_update.username
+    if user_update.email is not None:
+        user.email = user_update.email
+    if user_update.username is not None:
+        user.username =  user_update.username
     user =db.update_u(session,user)
     return UserResponse(user = user)
 
