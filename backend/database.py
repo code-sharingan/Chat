@@ -119,14 +119,14 @@ def get_chat_users(session:Session,chat_id:int):
     chat = session.get(ChatInDB,chat_id)
     users=[]
     if(chat):
-        for u in chat.users:
-            user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
-            users.append(user)
-            sort_key=lambda user: user.id
-            return UserCollection(
-        meta={"count":len(users)},
-        users=sorted(users,key=sort_key)
-    )
+        users = chat.users # list[UserInDB], but fastapi/sqlmodel can automatically convert to list[User]
+        # for u in chat.users:
+        #     user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
+        #     users.append(user)
+        return UserCollection(
+            meta={"count":len(users)},
+            users=sorted(users)
+        )
     raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
 
 def updateChat(session:Session,chat_id:int,user:UserInDB,text:str):
