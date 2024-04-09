@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict
 from typing_extensions import Annotated, Doc
-from fastapi import APIRouter,Depends,HTTPException
+from fastapi import APIRouter,Depends,HTTPException,status
 from sqlmodel import SQLModel ,Session,select
 from backend.entities import User,UserInDB
 from passlib.context import CryptContext
@@ -67,7 +67,7 @@ class ExpiredToken(AuthException):
             description="expired bearer token",
         )
 
-@auth_router.post("/resgistration",response_model = User)
+@auth_router.post("/resgistration",response_model = User,status_code=status.HTTP_201_CREATED)
 def register_new_user(register:UserResgistration,session: Session = Depends(db.get_session)):
     """Register a new user to the database"""
     hashed_pass = pwd_context.hash(register.password)
