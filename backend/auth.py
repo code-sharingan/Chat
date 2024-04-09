@@ -49,7 +49,7 @@ class InvalidCredentials(AuthException):
     def __init__(self):
         super().__init__(
             error="invlaid_client",
-            description="invlaid username or password",
+            description="invalid username or password",
         )
 
 
@@ -57,7 +57,7 @@ class InvalidToken(AuthException):
    def __init__(self):
         super().__init__(
             error="invalid_client",
-            description="invlaid bearer token",
+            description="invalid bearer token",
         )
 class ExpiredToken(AuthException):
     def __init__(self):
