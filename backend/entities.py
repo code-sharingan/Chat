@@ -51,6 +51,8 @@ class userCreate(SQLModel):
     email:str
     hashed_password:str
 
+class messageCreate(BaseModel):
+    text:str
 
 class userUpdate(SQLModel):
     username:Optional[str]=None
