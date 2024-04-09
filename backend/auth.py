@@ -20,7 +20,7 @@ jwt_key= os.environ.get("JWT_KEY",default="insecure-jwt-key-for-dev")
 jwt_algo="HS256"
 class Claims(BaseModel):
     """access token claims"""
-    subject:str 
+    sub:str 
     exp:int 
 
 class UserResgistration(SQLModel):
@@ -109,7 +109,7 @@ def _get_authenticated_user(session: Session,form: OAuth2PasswordRequestForm)->U
 
 def _build_access_token(user: UserInDB)->AccessToken:
     expiration = int (datetime.now(timezone.utc).timestamp())+access_token_duration
-    claims = Claims(subject=str(user.id) , exp= expiration)
+    claims = Claims(sub=str(user.id) , exp= expiration)
     access_token = jwt.encode(claims.model_dump(),key=jwt_key,algorithm=jwt_algo)
     return AccessToken(
         access_token=access_token,
@@ -121,7 +121,7 @@ def _build_access_token(user: UserInDB)->AccessToken:
 def _decode_access_token(session: Session,token:str):
     try:
         claims = Claims(**jwt.decode(token,key=jwt_key,algorithms=[jwt_algo]))
-        user_id=claims.subject
+        user_id=claims.sub
         user = session.get(UserInDB,user_id)
 
         if user is None:
