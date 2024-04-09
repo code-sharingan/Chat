@@ -125,7 +125,7 @@ def get_chat_users(session:Session,chat_id:int):
         #     users.append(user)
         return UserCollection(
             meta={"count":len(users)},
-            users=sorted(users)
+            users=users
         )
     raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
 
