@@ -113,7 +113,7 @@ def _build_access_token(user: UserInDB)->AccessToken:
     access_token = jwt.encode(claims.model_dump(),key=jwt_key,algorithm=jwt_algo)
     return AccessToken(
         access_token=access_token,
-        token_type="bearer",
+        token_type="Bearer",
         expires_in= access_token_duration
     )
 
