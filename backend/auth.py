@@ -67,7 +67,7 @@ class ExpiredToken(AuthException):
             description="expired bearer token",
         )
 
-@auth_router.post("/resgistration",response_model = User,status_code=status.HTTP_201_CREATED)
+@auth_router.post("/registration",response_model = User,status_code=status.HTTP_201_CREATED)
 def register_new_user(register:UserResgistration,session: Session = Depends(db.get_session)):
     """Register a new user to the database"""
     hashed_pass = pwd_context.hash(register.password)
