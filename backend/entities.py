@@ -5,7 +5,9 @@ from typing import Optional
 
 class Metadata(BaseModel):
     count:int
-
+class Metadata2(BaseModel):
+    message_count:int
+    user_count:int
 class User(SQLModel):
     """represents an api responsoe for a user"""
     id: int
@@ -96,12 +98,30 @@ class ChatInDB(SQLModel, table=True):
 
 
 
+
 class Message(SQLModel):
     id:int
     text:str
     chat_id:int
     user:User
     created_at:datetime
+
+class newChatResponse1(SQLModel):
+    meta:Metadata2
+    chat:Chat
+class newChatResponse2(SQLModel):
+    meta:Metadata2
+    chat:Chat
+    users:Optional[list[User]]
+class newChatResponse3(SQLModel):
+    meta:Metadata2
+    chat:Chat
+    messages:Optional[list[Message]]
+class newChatResponse4(SQLModel):
+    meta:Metadata2
+    chat:Chat
+    messages:Optional[list[Message]]
+    users:Optional[list[User]]
 
 class MessagesResponse(SQLModel):
     meta: Metadata

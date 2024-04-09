@@ -1,10 +1,12 @@
-from fastapi import APIRouter,HTTPException,Depends
+from fastapi import APIRouter,HTTPException,Depends,Query
 from datetime import date
 from typing import Literal
 from backend import database as db
 from sqlmodel import Session
 from backend.entities import chatCollection,Chat,chatCreate,Message,UserCollection,ChatResponse,MessagesResponse,MessageResponse,UserInDB
 from backend.auth import get_current_user
+from typing import List
+
 
 chat_router = APIRouter(prefix="/chats",tags=["Chats"])
 
@@ -12,11 +14,6 @@ chat_router = APIRouter(prefix="/chats",tags=["Chats"])
 def get_chats(session: Session = Depends(db.get_session)):
     chats=db.get_all_chats(session)
     return chatCollection( meta={"count":len(chats)} , chats=chats)
-
-# @chat_router.get("/{chat_id}" , response_model=chatIDB ,description="this api call gets the particular chat with the chat id or raises error 404")
-# def get_caht(chat_id:str):
-#     chat =db.get_chat(chat_id)
-#     return chatIDB(chat=chat)
 
 @chat_router.put("/{chat_id}",response_model = ChatResponse ,description="this api call changes the name of the particular chat witht the given name or if the chat does not exists then raises 404")
 def create_user(chat_create: chatCreate,chat_id:int,session: Session = Depends(db.get_session)):
@@ -36,3 +33,6 @@ def get_chat_user(chat_id:str,session: Session = Depends(db.get_session)):
 def putChatMessage(chat_id:str,text:str ,user: UserInDB = Depends(get_current_user),session :Session =  Depends(db.get_session)):
     return db.updateChat(session,chat_id,user,text)
 
+@chat_router.get("/{chat_id}")
+def getChat(chat_id:str,session :Session =  Depends(db.get_session),include: List[str] =Query(None)):
+    return db.getChat(chat_id,session,include)

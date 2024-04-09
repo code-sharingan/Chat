@@ -3,10 +3,10 @@ from datetime import date ,datetime
 from uuid import uuid4
 from fastapi import HTTPException
 from sqlmodel import Session, SQLModel, create_engine, select
-from backend.entities import User,userCreate,Chat,chatCreate, UserInDB ,ChatInDB,ChatResponse,MessageInDB,Message,MessageInDB,MessagesResponse,UserCollection,MessageResponse
+from backend.entities import User,userCreate,Chat,chatCreate, UserInDB ,ChatInDB,ChatResponse,MessageInDB,Message,MessageInDB,MessagesResponse,UserCollection,MessageResponse,newChatResponse1,newChatResponse2,newChatResponse3,newChatResponse4
 # with open("backend/fake_db.json","r") as f:
 #     Db = json.load(f)
-
+from typing import List
 
 
 engine = create_engine(
@@ -135,6 +135,53 @@ def updateChat(session:Session,chat_id:int,user:UserInDB,text:str):
         return MessageResponse(message=m)
     else:
         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+
+
+def getChat(chat_id , session:Session , include:List[str]):
+    chatdb = session.get(ChatInDB,chat_id)
+   
+    if not chatdb:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    users = chatdb.users
+    messages = chatdb.messages
+    chat  = Chat(id=chatdb.id , name =  chatdb.name , owner = chatdb.owner, created_at= chatdb.created_at)
+    response = newChatResponse1(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat)
+    if include is not None:
+        if "users" in include and "messages" in include:
+            print("=======inside both")
+            message_list=[]
+            for m in messages:
+                message = Message(id=m.id ,text=m.text,chat_id=m.chat_id,user=m.user,created_at=m.created_at)
+                message_list.append(message)
+            response = newChatResponse3(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,messages=message_list)
+            users=[]
+            for u in chatdb.users:
+                user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
+                users.append(user)
+            sort_key=lambda user: user.id
+            users =sorted(users,key=sort_key)
+            response = newChatResponse4(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,users=users,messages=message_list)
+            return response
+        if "messages" in include and "users" not in include:
+            message_list=[]
+            for m in messages:
+                message = Message(id=m.id ,text=m.text,chat_id=m.chat_id,user=m.user,created_at=m.created_at)
+                message_list.append(message)
+            response = newChatResponse3(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,messages=message_list)
+            return response
+        elif "users" in include and "messages" not in include:
+            users=[]
+            for u in chatdb.users:
+                user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
+                users.append(user)
+            sort_key=lambda user: user.id
+            users =sorted(users,key=sort_key)
+            response = newChatResponse2(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,users=users)
+            return response
+       
+
+    return response
+
 
 
 
