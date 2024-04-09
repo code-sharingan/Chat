@@ -12,7 +12,6 @@ from datetime import datetime,timezone
 from jose import ExpiredSignatureError,JWTError,jwt
 
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 auth_router= APIRouter(prefix="/auth" , tags=["Authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
