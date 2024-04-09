@@ -65,9 +65,9 @@ def handle_entity_not_found(
         },
     )
 
-@app.exception_handler(HTTPException)
-def handle_http_exception(request:Request,exception:HTTPException):
-    return JSONResponse(status_code=exception.status_code,
-                        content=exception.detail)
+# @app.exception_handler(HTTPException)
+# def handle_http_exception(request:Request,exception:HTTPException):
+#     return JSONResponse(status_code=exception.status_code,
+#                         content=exception.detail)
 
 
