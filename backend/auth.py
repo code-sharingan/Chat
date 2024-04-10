@@ -45,6 +45,16 @@ class AuthException(HTTPException):
             },
         )
 
+class Exception1(HTTPException):
+    def __init__(self,entity_field:str,entity_value:str):
+        super().__init__(status_code = 422 , detail={
+            "type": "duplicate_value",
+            "entity_name": "User",
+            "entity_field": entity_field,
+            "entity_value": entity_value
+            
+        })
+
 class InvalidCredentials(AuthException):
     def __init__(self):
         super().__init__(
@@ -69,6 +79,12 @@ class ExpiredToken(AuthException):
 @auth_router.post("/registration",response_model = UserResponse,status_code=status.HTTP_201_CREATED)
 def register_new_user(register:UserResgistration,session: Session = Depends(db.get_session)):
     """Register a new user to the database"""
+    user = session.exec(select(UserInDB).where(UserInDB.username == register.username)).first()
+    if user is not None:
+        raise Exception1(entity_field="username" ,entity_value=register.username)
+    user = session.exec(select(UserInDB).where(UserInDB.email == register.email)).first()
+    if user is not None:
+        raise Exception1(entity_field="email" ,entity_value=register.email)
     hashed_pass = pwd_context.hash(register.password)
     user = UserInDB(
         username=register.username,
