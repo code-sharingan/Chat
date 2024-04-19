@@ -45,6 +45,9 @@ function ChatList()
             .then((response)=>response.json())
         )
     })
+    console.log("------this is the chats call--------")
+    console.log(data)
+    console.log("------this is the chats call ends--------")
     if(data &&data.chats)
     {
         return(
@@ -53,9 +56,6 @@ function ChatList()
                     <div className="chat-box">
                         <Link key={chat.id} to={`/chats/${chat.id}`}className="chat-name" id={chat.id}>{chat.name}</Link>
                         <div className="participants">
-                        {chat.user_ids.map((user)=>(
-                            <>{user} </>
-                        ))}
                         <br/>
                         <>created-at:{chat.created_at}</>
                         </div>
