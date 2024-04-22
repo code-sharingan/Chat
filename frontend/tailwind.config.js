@@ -8,7 +8,12 @@ export default {
     fontSize:{
       xs:'0.65rem',
     },
-    extend: {},
+    
+    extend: {
+      maxHeight:{
+        fitted: "calc(100vh - 48px)",
+      },
+    },
   },
   plugins: [],
 }
