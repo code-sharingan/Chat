@@ -30,6 +30,7 @@ function MessageForm({chatid})
                     queryClient.invalidateQueries({
                         queryKey:["chats",chatid]
                     });
+                    setMessage("")
                 } 
                 else {
                     console.log("error")
@@ -61,10 +62,12 @@ function ChatCard({chatId})
         <div className=" col-span-2 chat-card flex flex-col flex-1 max-h-fitted ">
             <ScrollContainer>
                 {data.messages.map((message)=>(
-                    <div className="message-box  border-solid border-2 border-yellow-500 w-auto h-auto p-2 m-4">
-                        <div className="user-name flex flex-row text-sm text-green-500">
-                            <div className="mr-2">{message.user.username}  -</div>
-                            <div>{new Date(message.created_at).toDateString()}{new Date(message.created_at).toLocaleTimeString()}</div>
+                    <div className="message-box  border-solid border-2 rounded-md  border-blue-100 shadow-sm shadow-blue-500 w-auto h-auto p-2 m-4">
+                        <div className="user-name flex flex-row text-sm text-green-500  justify-between items-center mb-2">
+                            <div className="flex flex-row items-strech">
+                                <div >{message.user.username}   -       </div>
+                                <div>{new Date(message.created_at).toDateString()}{new Date(message.created_at).toLocaleTimeString()}</div>
+                            </div>
                         </div>
                     <div className="user-message">{message.text}</div>
                     </div>

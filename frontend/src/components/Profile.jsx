@@ -9,6 +9,7 @@ function Profile() {
   const user = useUser();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [created_at,setCreatedAt] = useState("")
   const [readOnly, setReadOnly] = useState(true);
   const navigate = useNavigate();
 
@@ -16,6 +17,7 @@ function Profile() {
     if (user) {
       setUsername(user.username);
       setEmail(user.email);
+      setCreatedAt(user.created_at);
     }
   }
 
@@ -73,6 +75,10 @@ function Profile() {
           readOnly={readOnly}
           setter={setEmail}
         />
+        <FormInput name="created-at"
+          type="text"
+          value={new Date(created_at).toDateString() +"  "+new Date(created_at).toLocaleTimeString() }
+          readOnly = {true}/>
         {!readOnly &&
           <Button className="mr-8" type="submit">
             update
