@@ -43,6 +43,7 @@ function AuthenticatedRoutes() {
       <Route path="/chats" element={<Chats />} />
       <Route path="/chats/:chatId" element={<Chats />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="*" element={<Error/>}/>
     </Routes>
   );
 }

@@ -75,7 +75,7 @@ function Profile() {
           readOnly={readOnly}
           setter={setEmail}
         />
-        <FormInput name="created-at"
+        <FormInput name="Member since"
           type="text"
           value={new Date(created_at).toDateString() +"  "+new Date(created_at).toLocaleTimeString() }
           readOnly = {true}/>

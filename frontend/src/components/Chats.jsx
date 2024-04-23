@@ -6,7 +6,7 @@ import Button from "./Button";
 import { useAuth } from "../context/auth";
 import ScrollContainer from "./ScrollContainer";
 
-
+// my frontend contains .css files but the are all commented out
 function MessageForm({chatid})
 {       const navigate = useNavigate();  
         const [message,setMessage] =  useState("")
@@ -81,13 +81,12 @@ function ChatCard({chatId})
     }
     }
    
-    return(<div className=" col-span-2 chat-card flex flex-col flex-1 max-h-fitted ">
+    return(<div className=" col-span-2 chat-card flex flex-col flex-1 max-h-fitted text-center m-4">
         <h1>Select a chat</h1>
     </div>)
 }
 function ChatList()
 {
-    
     const {data}=useQuery({
         queryKey:["chats"],
         queryFn: ()=>(
