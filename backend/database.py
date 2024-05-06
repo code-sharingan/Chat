@@ -119,7 +119,7 @@ def get_messages(session: Session,chat_id:str,user):
             return MessagesResponse(meta={"count":len(message_list)},messages=message_list)
         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
     else:
-        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to view chat"}})
+        raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to view chat"})
 
     
 def get_chat_users(session:Session,chat_id:int,user):
@@ -137,7 +137,7 @@ def get_chat_users(session:Session,chat_id:int,user):
                 meta={"count":len(users)},
                 users=users
             )
-    raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to view chat"}})
+    raise HTTPException(status_code =403 ,detail={"error":"no_permission","error_description":"requires permission to view chat"})
 
 def updateChat(session:Session,chat_id:int,user:UserInDB,text:str):
     chat = session.get(ChatInDB,chat_id)
@@ -152,7 +152,7 @@ def updateChat(session:Session,chat_id:int,user:UserInDB,text:str):
         m = Message(id=message.id , text =  message.text , chat_id = chat_id, user=u , created_at=message.created_at)
         return MessageResponse(message=m)           
     else:
-        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to view chat"}})
+        raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to view chat"})
 def userChatLink(session,userid,chatid):
     link = session.exec(select(UserChatLinkInDB).filter_by(user_id = userid,chat_id=chatid)).first()
     return bool(link)
@@ -201,7 +201,7 @@ def getChat(chat_id , session:Session , include:List[str],user):
 
         return response
     else:
-        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to view chat"}})
+        raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to view chat"})
 
 
 def delMessage(chat_id,message_id,session,user):
