@@ -13,7 +13,6 @@ function MessageForm({chatid})
         const {token} =  useAuth();
         const queryClient = useQueryClient();
         const onChange = (e)=>{setMessage(e.target.value)}
-        
         const onSubmit = (e)=>{
             const m =  {text:message}
             e.preventDefault();
@@ -44,8 +43,97 @@ function MessageForm({chatid})
             </form>
         )
 }
-function ChatCard({chatId})
+
+
+function EditMessageForm({message,onChange , onCancel,onSubmit})
 {
+    // const onChange = (e)=>{setNewText(e.target.value)}
+
+    return(
+        <form onSubmit = {onSubmit}>
+            <textarea className="w-full border rounded border-blue-300 text-black "
+             value={message}
+             onChange={onChange}
+            />
+            <div>
+                <button className="border rounded border-bulue-300 w-36" type ="submit">Save</button>
+                <button className="border rounded border-bulue-300 mx-4 w-36" type="button" onClick={onCancel}>cancel</button>
+            </div>
+        </form>
+    )
+}
+function Error({ message }) {
+    if (message === "") {
+      return <></>;
+    }
+    return (
+      <div className="text-red-300 text-xs">
+        {message}
+      </div>
+    );
+  }
+function ChatCard({chatId})
+{   const queryClient = useQueryClient();
+    const {token} =  useAuth();
+    const [error, setError] = useState("");
+    const [editMessageId,setEditMessageID] =  useState(null);
+    const [newText,setNewText]  = useState("")
+    const onEditClick = (id,message)=>{
+        setNewText(message);
+        setEditMessageID(id);
+    }
+    const onDeleteClick = (chat_id,message_id)=>{
+        fetch(
+            `http://127.0.0.1:8000/chats/${chat_id}/messages/${message_id}`,
+            {
+              method: "delete",
+              headers: {
+                "Authorization": "Bearer " + token, "Content-Type": "application/json"
+              },
+            },
+          ).then((response) => {
+            if (response.ok) {
+                queryClient.invalidateQueries({
+                    queryKey:["chats",chat_id]
+                });
+                setError("")
+            } 
+            else if(response.status ===403) {
+                setError("You dont have permission to delete this message")
+            }
+          });
+        }
+    const onCancel=()=>{
+        setEditMessageID(null);
+    }
+    const onChange = (e)=>{setNewText(e.target.value)
+        console.log(newText)
+    }
+    const onSubmit=(e)=>{
+        e.preventDefault();
+        const text = newText
+        fetch(
+            `http://127.0.0.1:8000/chats/${chatId}/messages/${editMessageId}`,
+            {
+              method: "put",
+              headers: {
+                "Authorization": "Bearer " + token, "Content-Type": "application/json"
+              }, body: JSON.stringify({ text}),
+            },
+          ).then((response) => {
+            if (response.ok) {
+                queryClient.invalidateQueries({
+                    queryKey:["chats",chatId]
+                });
+                setError("")
+                setEditMessageID(null);
+            } 
+            else if(response.status ===403) {
+                setError("You dont have permission to edit this message");
+                setEditMessageID(null);
+            }
+          });
+    }
     if(chatId)
     {
         const {data}=useQuery({
@@ -66,13 +154,25 @@ function ChatCard({chatId})
                         <div className="user-name flex flex-row text-sm text-green-500  justify-between items-center mb-2">
                             <div className="flex flex-row items-strech">
                                 <div >{message.user.username}   -       </div>
-                                <div>{new Date(message.created_at).toDateString()}{new Date(message.created_at).toLocaleTimeString()}</div>
+                                <div>
+                                    {new Date(message.created_at).toDateString()}{new Date(message.created_at).toLocaleTimeString()}
+                                </div>
+                                <div/>
+                                <div  className=" flex flex-rowmx-1 my-1 h-8 w-24 text-center text-white-500">
+                                    <button  onClick= {()=>onDeleteClick(chatId,message.id)} className="border rounded border-blue-300 w-full ml-4">x</button>
+                                    <button onClick = {()=>onEditClick(message.id,message.text)} className="border rounded border-blue-300 w-full">e</button>
+                                </div>
                             </div>
                         </div>
-                    <div className="user-message">{message.text}</div>
+                    { editMessageId ===message.id ? 
+                        <EditMessageForm  message={newText} onChange={onChange} onCancel={onCancel} onSubmit={onSubmit}/> : 
+                        <div >{message.text}</div>
+                    }
+                    
                     </div>
                 ))}
             </ScrollContainer>
+            <Error message={error}/>
             <div className="border-solid border-t-4 border-blue-400">
             <MessageForm chatid={chatId}/>
             </div>
@@ -85,32 +185,28 @@ function ChatCard({chatId})
         <h1>Select a chat</h1>
     </div>)
 }
+
+
+
+
+
 function ChatList()
 {
+    const {token} =  useAuth();
     const {data}=useQuery({
         queryKey:["chats"],
         queryFn: ()=>(
-            fetch("http://127.0.0.1:8000/chats")
+            fetch("http://127.0.0.1:8000/chats",
+                {
+                    method: "get",
+              headers: {
+                "Authorization": "Bearer " + token, "Content-Type": "application/json"
+              }
+                }
+            )
             .then((response)=>response.json())
         )
     })
-    // const classname = [ , active?  : "border-green"].join(" ");
-    //--------------------- fix this hover over the chat and selected chat thing
-    // const linkClass = ["flex flex-col" , "border-2 rounded","mb-4 p-2","hover:bg-zinc-900"].join(" ")
-    // const getLinkClass= ({isActive})=>(isActive ? linkClass+" bg-zinc-500 border-orange-400" : linkClass);
-
-
-//   // const getLinkClass= ({isActive})=>(
-//   //   isActive ? linkClass+" bg-gray-500" : linkClass
-//   // );
-
-    // const className = ["text-left", "p-4","hover:bg-zinc-500"].join(" ")
-    // const {activeChatId,setActivechatid} = useState(null)
-    // const chatEvent = (cahtid)=>{setActivechatid(cahtid)}
-    // const getClassName = (chatid) => (
-    //     chatid == activeChatId ? className + " bg-purple-500 text-green-500" : className
-    //   ); 
-
     const linkClass = ["text-left", "p-4","hover:bg-zinc-500"].join(" ")
     const getLinkClass= ({isActive})=>(
     isActive ? linkClass+" bg-gray-500 text-green-500" : linkClass

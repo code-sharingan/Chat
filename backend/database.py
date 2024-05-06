@@ -3,7 +3,7 @@ from datetime import date ,datetime
 from uuid import uuid4
 from fastapi import HTTPException
 from sqlmodel import Session, SQLModel, create_engine, select
-from backend.entities import User,userCreate,Chat,chatCreate, UserInDB ,ChatInDB,ChatResponse,MessageInDB,Message,MessageInDB,MessagesResponse,UserCollection,MessageResponse,newChatResponse1,newChatResponse2,newChatResponse3,newChatResponse4
+from backend.entities import User,userCreate,Chat,chatCreate, UserInDB ,ChatInDB,UserChatLinkInDB,messageCreate,ChatResponse,MessageInDB,Message,MessageInDB,MessagesResponse,UserCollection,MessageResponse,newChatResponse1,newChatResponse2,newChatResponse3,newChatResponse4
 # with open("backend/fake_db.json","r") as f:
 #     Db = json.load(f)
 from typing import List
@@ -89,8 +89,8 @@ def update_u(session:Session ,useridb:UserInDB)->User:
     
 # ------------------------------chats---------------------------------------------
 
-def get_all_chats(session: Session):
-    chats = session.exec(select(ChatInDB)).all()
+def get_all_chats(session: Session,user):
+    chats = session.exec(select(ChatInDB).filter(ChatInDB.users.any(UserInDB.id == user.id))).all()
     return chats
 
 
@@ -105,116 +105,133 @@ def put_chat(session:Session ,chat_id:int ,chat_create:chatCreate):
         return ChatResponse(chat=chat_response)
     raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
 
-def get_messages(session: Session,chat_id:str):
-    messages = session.exec(select(MessageInDB).filter(MessageInDB.chat_id==chat_id)).all()
-    if(messages):
-        message_list=[]
-        for m in messages:
-            message = Message(id=m.id ,text=m.text,chat_id=m.chat_id,user=m.user,created_at=m.created_at)
-            message_list.append(message)
-        return MessagesResponse(meta={"count":len(message_list)},messages=message_list)
-    raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
-    
-def get_chat_users(session:Session,chat_id:int):
+def get_messages(session: Session,chat_id:str,user):
     chat = session.get(ChatInDB,chat_id)
-    users=[]
-    if(chat):
-        users = chat.users # list[UserInDB], but fastapi/sqlmodel can automatically convert to list[User]
-        # for u in chat.users:
-        #     user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
-        #     users.append(user)
-        return UserCollection(
-            meta={"count":len(users)},
-            users=users
-        )
-    raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    if not chat:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    if userChatLink(session,user.id,chat_id):
+        messages = session.exec(select(MessageInDB).filter(MessageInDB.chat_id==chat_id)).all()
+        if(messages):
+            message_list=[]
+            for m in messages:
+                message = Message(id=m.id ,text=m.text,chat_id=m.chat_id,user=m.user,created_at=m.created_at)
+                message_list.append(message)
+            return MessagesResponse(meta={"count":len(message_list)},messages=message_list)
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    else:
+        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to view chat"}})
+
+    
+def get_chat_users(session:Session,chat_id:int,user):
+    chat = session.get(ChatInDB,chat_id)
+    if not chat:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    if userChatLink(session,user.id,chat_id):
+        users=[]
+        if(chat):
+            users = chat.users # list[UserInDB], but fastapi/sqlmodel can automatically convert to list[User]
+            # for u in chat.users:
+            #     user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
+            #     users.append(user)
+            return UserCollection(
+                meta={"count":len(users)},
+                users=users
+            )
+    raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to view chat"}})
 
 def updateChat(session:Session,chat_id:int,user:UserInDB,text:str):
     chat = session.get(ChatInDB,chat_id)
-    if chat:
+    if not chat:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    if userChatLink(session,user.id,chat_id):    
         message =  MessageInDB(user_id=user.id,text=text,chat_id=chat_id,chat = chat,user=user)
         chat.messages.append(message)
         session.commit()
         session.refresh(chat)
         u = User(id= user.id, username =  user.username , email=user.email,created_at=user.created_at)
         m = Message(id=message.id , text =  message.text , chat_id = chat_id, user=u , created_at=message.created_at)
-        return MessageResponse(message=m)
+        return MessageResponse(message=m)           
     else:
-        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to view chat"}})
+def userChatLink(session,userid,chatid):
+    link = session.exec(select(UserChatLinkInDB).filter_by(user_id = userid,chat_id=chatid)).first()
+    return bool(link)
 
-
-def getChat(chat_id , session:Session , include:List[str]):
+def getChat(chat_id , session:Session , include:List[str],user):
     chatdb = session.get(ChatInDB,chat_id)
-   
     if not chatdb:
         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
-    users = chatdb.users
-    messages = chatdb.messages
-    chat  = Chat(id=chatdb.id , name =  chatdb.name , owner = chatdb.owner, created_at= chatdb.created_at)
-    response = newChatResponse1(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat)
-    if include is not None:
-        if "users" in include and "messages" in include:
-            print("=======inside both")
-            message_list=[]
-            for m in messages:
-                message = Message(id=m.id ,text=m.text,chat_id=m.chat_id,user=m.user,created_at=m.created_at)
-                message_list.append(message)
-            response = newChatResponse3(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,messages=message_list)
-            users=[]
-            for u in chatdb.users:
-                user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
-                users.append(user)
-            sort_key=lambda user: user.id
-            users =sorted(users,key=sort_key)
-            response = newChatResponse4(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,users=users,messages=message_list)
-            return response
-        if "messages" in include and "users" not in include:
-            message_list=[]
-            for m in messages:
-                message = Message(id=m.id ,text=m.text,chat_id=m.chat_id,user=m.user,created_at=m.created_at)
-                message_list.append(message)
-            response = newChatResponse3(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,messages=message_list)
-            return response
-        elif "users" in include and "messages" not in include:
-            users=[]
-            for u in chatdb.users:
-                user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
-                users.append(user)
-            sort_key=lambda user: user.id
-            users =sorted(users,key=sort_key)
-            response = newChatResponse2(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,users=users)
-            return response
-       
+    if userChatLink(session,user.id,chat_id):
+        users = chatdb.users
+        messages = chatdb.messages
+        chat  = Chat(id=chatdb.id , name =  chatdb.name , owner = chatdb.owner, created_at= chatdb.created_at)
+        response = newChatResponse1(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat)
+        if include is not None:
+            if "users" in include and "messages" in include:
+                message_list=[]
+                for m in messages:
+                    message = Message(id=m.id ,text=m.text,chat_id=m.chat_id,user=m.user,created_at=m.created_at)
+                    message_list.append(message)
+                response = newChatResponse3(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,messages=message_list)
+                users=[]
+                for u in chatdb.users:
+                    user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
+                    users.append(user)
+                sort_key=lambda user: user.id
+                users =sorted(users,key=sort_key)
+                response = newChatResponse4(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,users=users,messages=message_list)
+                return response
+            if "messages" in include and "users" not in include:
+                message_list=[]
+                for m in messages:
+                    message = Message(id=m.id ,text=m.text,chat_id=m.chat_id,user=m.user,created_at=m.created_at)
+                    message_list.append(message)
+                response = newChatResponse3(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,messages=message_list)
+                return response
+            elif "users" in include and "messages" not in include:
+                users=[]
+                for u in chatdb.users:
+                    user= User(id=u.id ,username=u.username,email=u.email,created_at=u.created_at)
+                    users.append(user)
+                sort_key=lambda user: user.id
+                users =sorted(users,key=sort_key)
+                response = newChatResponse2(meta={"message_count":len(messages) , "user_count":len(users)} , chat=chat,users=users)
+                return response
+        
 
-    return response
-
-
-
-
-# def get_chat(chat_id:str):
-#     if(chat_id in Db["chats"]):
-#         return Chat(**Db["chats"][chat_id])
-#     else:
-#         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+        return response
+    else:
+        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to view chat"}})
 
 
+def delMessage(chat_id,message_id,session,user):
+    chatdb = session.get(ChatInDB,chat_id)
+    if not chatdb:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    message = session.get(MessageInDB,message_id)
+    if not message:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"message","entity_id":message_id}})
+    message_user = message.user
+    if(message_user.id != user.id):
+        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to delete message"}})
+    session.delete(message)
+    session.commit()
+    return None
 
-# def del_chat(chat_id):
-#     chat=get_chat(chat_id)
-#     del Db["chats"][chat_id]
-
-
-
-
-# def get_chat_user(chat_id:str):
-#     if(chat_id not in Db["chats"]):
-#         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
-#     chat_data=Db["chats"][chat_id]
-#     user_ids = chat_data.get("user_ids",[])
-#     user =[]
-#     for u in user_ids:
-#         user.append(get_user_by_id(u))
-#     return user
+def updateUserMessage(chat_id,message_id,session,user,m:messageCreate):
+    chatdb = session.get(ChatInDB,chat_id)
+    if not chatdb:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    message = session.get(MessageInDB,message_id)
+    if not message:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"message","entity_id":message_id}})
+    message_user = message.user
+    if(message_user.id != user.id):
+        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to delete message"}})
+    message.text = m.text
+    session.commit()
+    session.refresh(message)
+    return MessageResponse(message=message)
     
 
     
