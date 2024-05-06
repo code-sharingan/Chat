@@ -258,7 +258,7 @@ def putusertochat(chat_id,user_id,session,user):
     if not u:
         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"User","entity_id":user_id}})
     if(chatdb.owner_id != user.id):
-            raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to edit chat"})
+            raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to edit chat members"})
     chatdb.users.append(u)
     session.commit()
     session.refresh(chatdb)
