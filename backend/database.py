@@ -213,7 +213,7 @@ def delMessage(chat_id,message_id,session,user):
         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"message","entity_id":message_id}})
     message_user = message.user
     if(message_user.id != user.id):
-        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to delete message"}})
+        raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to delete message"})
     session.delete(message)
     session.commit()
     return None
@@ -227,7 +227,7 @@ def updateUserMessage(chat_id,message_id,session,user,m:messageCreate):
         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"message","entity_id":message_id}})
     message_user = message.user
     if(message_user.id != user.id):
-        raise HTTPException(status_code =403 , detail={"detail":{"error":"no_permission","error_description":"requires permission to delete message"}})
+        raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to edit message"})
     message.text = m.text
     session.commit()
     session.refresh(message)
