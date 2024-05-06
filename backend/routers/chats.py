@@ -3,7 +3,7 @@ from datetime import date
 from typing import Literal
 from backend import database as db
 from sqlmodel import Session
-from backend.entities import chatCollection,Chat,chatCreate,Message,messageCreate,UserCollection,ChatResponse,MessagesResponse,MessageResponse,UserInDB
+from backend.entities import chatCollection,Chat,chatCreate,Message,ChatUsersResponse2,ChatUsersResponse,messageCreate,UserCollection,ChatResponse,MessagesResponse,MessageResponse,UserInDB
 from backend.auth import get_current_user
 from typing import List
 
@@ -16,8 +16,8 @@ def get_chats(session: Session = Depends(db.get_session),user: UserInDB = Depend
     return chatCollection( meta={"count":len(chats)} , chats=chats)
 
 @chat_router.put("/{chat_id}",response_model = ChatResponse ,description="this api call changes the name of the particular chat witht the given name or if the chat does not exists then raises 404")
-def create_user(chat_create: chatCreate,chat_id:int,session: Session = Depends(db.get_session)):
-    return db.put_chat(session,chat_id,chat_create)
+def create_user(chat_create: chatCreate,chat_id:int,session: Session = Depends(db.get_session),user: UserInDB = Depends(get_current_user)):
+    return db.put_chat(session,chat_id,chat_create,user)
 
 
 @chat_router.get("/{chat_id}/messages",response_model=MessagesResponse,description="gets the messages for the particular chat id ")
@@ -51,4 +51,17 @@ def updateTheUserText(chat_id:str, message_id:str , message:messageCreate,sessio
     #and if the user is not the owner of the message there will be an error
     return db.updateUserMessage(chat_id,message_id,session,user,message)
 
+#---------------MODIFICATIONS FOR ASSIGNMENT 5B----------------------
 
+@chat_router.post("",response_model=ChatResponse)
+def createNewChat(newchat:chatCreate,session :Session =  Depends(db.get_session),user: UserInDB = Depends(get_current_user)):
+    return db.createNewChat(session,newchat,user)
+
+@chat_router.put("/{chat_id}/users/{user_id}",response_model=ChatUsersResponse)
+def putnewusertochat(chat_id:int,user_id:int,session :Session =  Depends(db.get_session),user: UserInDB = Depends(get_current_user)):
+    return db.putusertochat(chat_id,user_id,session,user)
+    
+    
+@chat_router.delete("/{chat_id}/users/{user_id}",response_model=ChatUsersResponse2)
+def deluserfromchat(chat_id:int,user_id:int,session :Session =  Depends(db.get_session),user: UserInDB = Depends(get_current_user)):
+    return db.deluserfromchat(session,chat_id,user_id,user)

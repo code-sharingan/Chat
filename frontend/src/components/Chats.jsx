@@ -1,5 +1,5 @@
 import { useQuery,useQueryClient } from "react-query"
-import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { NavLink, Navigate, useNavigate, useParams } from "react-router-dom";
 import "./Chats.css"
 import { useState } from "react";
 import Button from "./Button";
@@ -218,13 +218,34 @@ function ChatList()
     const getLinkClass= ({isActive})=>(
     isActive ? linkClass+" bg-gray-500 text-green-500" : linkClass
   );
+ const navigate = useNavigate();  
+  const createNew = ()=>{
+    navigate("/chats/new")
+  }
+
+  const editChat = (chatid)=>{
+    navigate(`/chats/${chatid}/deatils`)
+  }
+  const className = [
+    "border rounded",
+    "px-4 py-2 my-4","border-blue-300","w-24","mx-auto"
+  ].join(" ");
+  const className2 = [
+    "px-auto py-2 my-4","w-12","hover:bg-zinc-500","h-14"
+  ].join(" ");
     if(data &&data.chats)
     {
         return(
             <div className="col-span-1 flex flex-col max-h-fitted border-r-2 border-l-4 border-blue-400 font-extrabold text-3xl ">
                 {data.chats.map((chat)=>(
-                    <NavLink className={getLinkClass} key={chat.id} to={`/chats/${chat.id}`} id={chat.id} onClick={()=>{chatEvent(chat.id)}} >{chat.name}</NavLink>
+                    <div>
+                        <NavLink className={getLinkClass} key={chat.id} to={`/chats/${chat.id}`} id={chat.id} onClick={()=>{chatEvent(chat.id)}} >{chat.name}</NavLink>
+                        <button className={className2} onClick={()=>(editChat(chat.id))}>edit</button>
+                    </div>
+                    
+                    
                 ))}
+            <button className={className} type="button" onClick = {createNew}>create </button>
             </div>
         )
     }

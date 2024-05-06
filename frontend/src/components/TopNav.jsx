@@ -27,7 +27,6 @@ function NavItem({to,name,right})
 
 function AuthenticatedNavItems() {
     const user = useUser();
-    console.log(user)
     return (
       <>
         <NavItem to="/" name="PONY EXPRESS" />

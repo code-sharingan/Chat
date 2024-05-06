@@ -3,7 +3,7 @@ from datetime import date ,datetime
 from uuid import uuid4
 from fastapi import HTTPException
 from sqlmodel import Session, SQLModel, create_engine, select
-from backend.entities import User,userCreate,Chat,chatCreate, UserInDB ,ChatInDB,UserChatLinkInDB,messageCreate,ChatResponse,MessageInDB,Message,MessageInDB,MessagesResponse,UserCollection,MessageResponse,newChatResponse1,newChatResponse2,newChatResponse3,newChatResponse4
+from backend.entities import User,userCreate,Chat,chatCreate, ChatUsersResponse2,ChatUsersResponse,UserInDB ,ChatInDB,UserChatLinkInDB,messageCreate,ChatResponse,MessageInDB,Message,MessageInDB,MessagesResponse,UserCollection,MessageResponse,newChatResponse1,newChatResponse2,newChatResponse3,newChatResponse4
 # with open("backend/fake_db.json","r") as f:
 #     Db = json.load(f)
 from typing import List
@@ -94,16 +94,19 @@ def get_all_chats(session: Session,user):
     return chats
 
 
-def put_chat(session:Session ,chat_id:int ,chat_create:chatCreate):
+def put_chat(session:Session ,chat_id:int ,chat_create:chatCreate,user):  
     name= chat_create.name
     chat = session.get(ChatInDB,chat_id)
     if(chat):
+        if(chat.owner_id != user.id):
+            raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to edit chat"})
         chat.name= name
         session.commit()
         session.refresh(chat)
         chat_response=Chat(id=chat.id , name=chat.name,owner=chat.owner,created_at=chat.created_at)
         return ChatResponse(chat=chat_response)
     raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    
 
 def get_messages(session: Session,chat_id:str,user):
     chat = session.get(ChatInDB,chat_id)
@@ -234,4 +237,57 @@ def updateUserMessage(chat_id,message_id,session,user,m:messageCreate):
     return MessageResponse(message=message)
     
 
+#-------------------updates for assignment 5b-------------
+def createNewChat(session,newchat,user):
+    chat = ChatInDB(name=newchat.name , owner_id=user.id,owner=user)   
+    session.add(chat)
+    session.commit()
+    session.refresh(chat)
+    userchatlink = UserChatLinkInDB(user_id=user.id,chat_id=chat.id)
+    session.add(userchatlink)
+    session.commit()
+    session.refresh(userchatlink)
+    return ChatResponse(chat=chat)
+
+
+def putusertochat(chat_id,user_id,session,user):
+    chatdb = session.get(ChatInDB,chat_id)
+    if not chatdb:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    u= session.get(UserInDB,user_id)
+    if not u:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"User","entity_id":user_id}})
+    if(chatdb.owner_id != user.id):
+            raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to edit chat"})
+    chatdb.users.append(u)
+    session.commit()
+    session.refresh(chatdb)
+    if not userChatLink(session,user_id,chat_id):
+        userchatlink = UserChatLinkInDB(user_id=user_id,chat_id=chatdb.id)
+        session.add(userchatlink)
+        session.commit()
+        session.refresh(userchatlink)
+    return ChatUsersResponse(meta={"count":len(chatdb.users)}, users=chatdb.users)
+
+
+def deluserfromchat(session,chat_id,user_id,user):
+    chatdb = session.get(ChatInDB,chat_id)
+    if chatdb.owner_id == user_id:
+        raise HTTPException(status_code =422 , detail={"error":"invalid_state","error_description":"owner of a chat cannot be removed"})
+    if not chatdb:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"Chat","entity_id":chat_id}})
+    u= session.get(UserInDB,user_id)
+    if not u:
+        raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"User","entity_id":user_id}})
+    if(chatdb.owner_id != user.id):
+            raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to edit chat members"})
+    chatdb.users.remove(u)
+    session.commit()
+    session.refresh(chatdb)
+    if userChatLink(session,user_id,chat_id):
+        userchatlink = UserChatLinkInDB(user_id=user_id,chat_id=chatdb.id)
+        session.delete(userchatlink)
+        session.commit()
+
+    return ChatUsersResponse2(users=chatdb.users)
     

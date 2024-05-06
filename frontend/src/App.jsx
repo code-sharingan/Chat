@@ -11,6 +11,7 @@ import Registration from './components/Registration';
 import PlsLogin from './components/PlsLogin';
 import Error from './components/Error';
 import Home from './components/Home';
+import NewChat from './components/NewChat';
 const queryClient = new QueryClient();
 
 
@@ -44,6 +45,7 @@ function AuthenticatedRoutes() {
       <Route path="/chats/:chatId" element={<Chats />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<Error/>}/>
+      <Route path="/chats/new" element={<NewChat/>}/>
     </Routes>
   );
 }

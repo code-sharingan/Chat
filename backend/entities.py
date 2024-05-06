@@ -147,3 +147,11 @@ class MessageInDB(SQLModel, table=True):
 
 class chatMessageText(SQLModel):
     text: str
+
+
+class ChatUsersResponse(SQLModel):
+    meta:Optional[Metadata]
+    users:list[User]
+
+class ChatUsersResponse2(SQLModel):
+    users:list[User]
