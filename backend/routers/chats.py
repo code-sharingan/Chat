@@ -53,11 +53,11 @@ def updateTheUserText(chat_id:str, message_id:str , message:messageCreate,sessio
 
 #---------------MODIFICATIONS FOR ASSIGNMENT 5B----------------------
 
-@chat_router.post("",response_model=ChatResponse)
+@chat_router.post("",response_model=ChatResponse,status_code=201)
 def createNewChat(newchat:chatCreate,session :Session =  Depends(db.get_session),user: UserInDB = Depends(get_current_user)):
     return db.createNewChat(session,newchat,user)
 
-@chat_router.put("/{chat_id}/users/{user_id}",response_model=ChatUsersResponse)
+@chat_router.put("/{chat_id}/users/{user_id}",response_model=ChatUsersResponse,status_code=201)
 def putnewusertochat(chat_id:int,user_id:int,session :Session =  Depends(db.get_session),user: UserInDB = Depends(get_current_user)):
     return db.putusertochat(chat_id,user_id,session,user)
     
