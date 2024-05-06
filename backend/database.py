@@ -272,6 +272,8 @@ def putusertochat(chat_id,user_id,session,user):
 
 def deluserfromchat(session,chat_id,user_id,user):
     chatdb = session.get(ChatInDB,chat_id)
+    if(chatdb.owner_id != user.id):
+            raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to edit chat members"})
     if chatdb.owner_id == user_id:
         raise HTTPException(status_code =422 , detail={"error":"invalid_state","error_description":"owner of a chat cannot be removed"})
     if not chatdb:
@@ -279,8 +281,6 @@ def deluserfromchat(session,chat_id,user_id,user):
     u= session.get(UserInDB,user_id)
     if not u:
         raise HTTPException(status_code =404 , detail={"detail":{"type":"entity_not_found" , "entity_name":"User","entity_id":user_id}})
-    if(chatdb.owner_id != user.id):
-            raise HTTPException(status_code =403 , detail={"error":"no_permission","error_description":"requires permission to edit chat members"})
     chatdb.users.remove(u)
     session.commit()
     session.refresh(chatdb)
