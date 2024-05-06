@@ -139,7 +139,14 @@ function ChatCard({chatId})
         const {data}=useQuery({
             queryKey:["chats",chatId],
             queryFn: ()=>(
-                fetch(`http://127.0.0.1:8000/chats/${chatId}/messages`)
+                fetch(`http://127.0.0.1:8000/chats/${chatId}/messages` ,
+                {
+                    method: "get",
+                    headers: {
+                      "Authorization": "Bearer " + token, "Content-Type": "application/json"
+                    },
+                  },
+                )
                 .then((response)=>response.json())
             ),
         })
