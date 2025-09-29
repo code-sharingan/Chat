@@ -216,7 +216,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-Your Name - [your.email@example.com]
+Your Name - Shubham Anil Singh
 
 ## 🙏 Acknowledgments
 
